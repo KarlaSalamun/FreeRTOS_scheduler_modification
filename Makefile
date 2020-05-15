@@ -3,7 +3,7 @@ BUILD_DIR ?= ./build
 
 
 # -------------------------
-FREERTOS_VERSION="V10.2.1"
+FREERTOS_VERSION=V10.2.1
 FREERTOS_INCLUDE_DIRS := \
 FreeRTOS/Source/include
 FREERTOS_SOURCES := \
@@ -66,7 +66,7 @@ $(BUILD_DIR)/%.cpp.o: %.cpp
 
 # Checkout FreeRTOS from SVN Repository
 get_freertos:
-	svn checkout https://svn.code.sf.net/p/freertos/code/tags/$(FREERTOS_VERSION)/FreeRTOS/Source FreeRTOS/Source
+	git clone --recursive --branch $(FREERTOS_VERSION) https://github.com/FreeRTOS/FreeRTOS-Kernel.git FreeRTOS/Source
 
 clean:
 	$(RM) -r $(BUILD_DIR)

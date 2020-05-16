@@ -18,9 +18,9 @@
 #define configUSE_16_BIT_TICKS                      ( 0 )
 #define configIDLE_SHOULD_YIELD                     ( 1 )
 #define configUSE_TASK_NOTIFICATIONS                ( 1 )
-#define configUSE_MUTEXES                           ( 0 )
-#define configUSE_RECURSIVE_MUTEXES                 ( 0 )
-#define configUSE_COUNTING_SEMAPHORES               ( 0 )
+#define configUSE_MUTEXES                           ( 1 )
+#define configUSE_RECURSIVE_MUTEXES                 ( 1 )
+#define configUSE_COUNTING_SEMAPHORES               ( 1 )
 #define configUSE_ALTERNATIVE_API                   ( 0 ) /* Deprecated! */
 #define configQUEUE_REGISTRY_SIZE                   ( 10 )
 #define configUSE_QUEUE_SETS                        ( 0 )
@@ -112,3 +112,6 @@
 
 #define traceTASK_CREATE(xTask)					\
 	printf("task %s is successfully created\n", pxNewTCB->pcTaskName );
+
+#define traceTASK_DELAY_UNTIL( xTimeToWake )			\
+	printf( "task %s delayed until %d\n", pxCurrentTCB->pcTaskName, (int)xTimeToWake );

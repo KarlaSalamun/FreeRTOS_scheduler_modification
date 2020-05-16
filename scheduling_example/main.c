@@ -25,7 +25,7 @@ int main( void ) {
 
 void TSK_A( void *pvParameters ) {
     TickType_t xLastWakeTimeA;
-    const TickType_t xFrequency = 5; //task A frequeny
+    const TickType_t xFrequency = 5;
     TickType_t count = 2;
     TickType_t xNextTime;
     TickType_t xTime;
@@ -47,7 +47,7 @@ void TSK_A( void *pvParameters ) {
 
 void TSK_B( void *pvParameters ) {
     TickType_t xLastWakeTimeB;
-    const TickType_t xFrequency = 5; //task A frequeny
+    const TickType_t xFrequency = 5;
     TickType_t count = 2;
     TickType_t xNextTime;
     TickType_t xTime;

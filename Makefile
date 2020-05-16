@@ -20,9 +20,9 @@ INCLUDE_DIRS += $(FREERTOS_INCLUDE_DIRS)
 
 # -------------------------
 EXAMPLE_INCLUDE_DIRS := \
-example
+scheduling_example
 EXAMPLE_SOURCES := \
-example/main.c
+scheduling_example/main.c
 # -------------------------
 SRCS += $(EXAMPLE_SOURCES)
 INCLUDE_DIRS += $(EXAMPLE_INCLUDE_DIRS)
@@ -65,8 +65,8 @@ $(BUILD_DIR)/%.cpp.o: %.cpp
 .PHONY: get_freertos clean
 
 # Checkout FreeRTOS from SVN Repository
-get_freertos:
-	git clone --recursive --branch $(FREERTOS_VERSION) https://github.com/FreeRTOS/FreeRTOS-Kernel.git FreeRTOS/Source
+# get_freertos:
+# 	git clone --recursive --branch $(FREERTOS_VERSION) https://github.com/FreeRTOS/FreeRTOS-Kernel.git FreeRTOS/Source
 
 clean:
 	$(RM) -r $(BUILD_DIR)

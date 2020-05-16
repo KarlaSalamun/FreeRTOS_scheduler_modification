@@ -268,7 +268,6 @@ void end_scheduler_task(void * par) {
     }
 }
 
-
 const struct timespec ts = { .tv_sec = 0, .tv_nsec = 200000 };
 
 void vApplicationIdleHook( void ) {

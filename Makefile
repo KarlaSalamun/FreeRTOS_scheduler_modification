@@ -5,15 +5,15 @@ BUILD_DIR ?= ./build
 # -------------------------
 FREERTOS_VERSION=V10.2.1
 FREERTOS_INCLUDE_DIRS := \
-FreeRTOS/Source/include
+FreeRTOS-Kernel/include
 FREERTOS_SOURCES := \
-FreeRTOS/Source/croutine.c \
-FreeRTOS/Source/event_groups.c\
-FreeRTOS/Source/list.c\
-FreeRTOS/Source/queue.c \
-FreeRTOS/Source/stream_buffer.c \
-FreeRTOS/Source/tasks.c \
-FreeRTOS/Source/timers.c
+FreeRTOS-Kernel/croutine.c \
+FreeRTOS-Kernel/event_groups.c\
+FreeRTOS-Kernel/list.c\
+FreeRTOS-Kernel/queue.c \
+FreeRTOS-Kernel/stream_buffer.c \
+FreeRTOS-Kernel/tasks.c \
+FreeRTOS-Kernel/timers.c
 # -------------------------
 SRCS += $(FREERTOS_SOURCES)
 INCLUDE_DIRS += $(FREERTOS_INCLUDE_DIRS)

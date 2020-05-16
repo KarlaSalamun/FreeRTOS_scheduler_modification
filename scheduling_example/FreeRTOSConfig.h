@@ -99,16 +99,22 @@
 	printf( "task %s resumed\n", pxCurrentTCB->pcTaskName );
 
 #define traceTASK_INCREMENT_TICK( xTickCount )		\
-	printf( "TICK: %d\n", (int)xTickCount );
+	taskENTER_CRITICAL();					\
+	printf( "TICK: %d\n", (int)xTickCount );	\
+	taskEXIT_CRITICAL();
 
 #define traceTASK_SWITCHED_IN()				\
-	printf( "task %s switched IN\n", pxCurrentTCB->pcTaskName );
+	taskENTER_CRITICAL();					\
+	printf( "task %s switched IN\n", pxCurrentTCB->pcTaskName );	\
+	taskEXIT_CRITICAL();
 
 #define traceTASK_SWITCHED_OUT()			\
-	printf( "task %s is switched OUT\n", pxCurrentTCB->pcTaskName );
+	taskENTER_CRITICAL();					\
+	printf( "task %s is switched OUT\n", pxCurrentTCB->pcTaskName );	\
+	taskEXIT_CRITICAL();
 
 #define traceMOVED_TASK_TO_READY_STATE(xTask)			\
-	printf( "task %s is ready\n", pxCurrentTCB->pcTaskName );
+	printf( "task %s is ready\n", xTask->pcTaskName );
 
 #define traceTASK_CREATE(xTask)					\
 	printf("task %s is successfully created\n", pxNewTCB->pcTaskName );

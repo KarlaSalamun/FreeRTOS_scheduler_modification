@@ -14,8 +14,8 @@ void TSK_B( void *pvParameters );
 int main( void ) {
     vPortEarlyInit();
 
-    xTaskEdfCreate( TSK_A, ( const char * ) "A", configMINIMAL_STACK_SIZE, NULL, 1, NULL, 5 );
-    xTaskEdfCreate( TSK_B, ( const char * ) "B", configMINIMAL_STACK_SIZE, NULL, 1, NULL, 5 );
+    xTaskPeriodicCreate( TSK_A, ( const char * ) "A", configMINIMAL_STACK_SIZE, NULL, 1, NULL, 5, 2, 1, 0 );
+    xTaskPeriodicCreate( TSK_B, ( const char * ) "B", configMINIMAL_STACK_SIZE, NULL, 1, NULL, 5, 2, 1, 0 );
 
     vTaskStartScheduler();
 

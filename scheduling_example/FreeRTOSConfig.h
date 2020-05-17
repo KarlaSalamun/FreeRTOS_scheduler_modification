@@ -70,7 +70,8 @@
 /* FreeRTOS MPU specific definitions. */
 #define configINCLUDE_APPLICATION_DEFINED_PRIVILEGED_FUNCTIONS 0
 
-#define configUSE_EDF_SCHEDULER 				1
+#define configUSE_EDF_SCHEDULER 				0
+#define configUSE_GP_SCHEDULER					1
 
 /* Optional functions - most linkers will remove unused functions anyway. */
 #define INCLUDE_vTaskPrioritySet                1

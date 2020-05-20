@@ -11,11 +11,16 @@
 void TSK_A( void *pvParameters );
 void TSK_B( void *pvParameters );
 
+uint32_t tardiness = 0;
+
+#define TSK_A_PERIOD 5
+#define TSK_B_PERIOD 8
+
 int main( void ) {
     vPortEarlyInit();
 
-    xTaskPeriodicCreate( TSK_A, ( const char * ) "A", configMINIMAL_STACK_SIZE, NULL, 1, NULL, 5, 2, 1, 0 );
-    xTaskPeriodicCreate( TSK_B, ( const char * ) "B", configMINIMAL_STACK_SIZE, NULL, 1, NULL, 5, 2, 1, 0 );
+    xTaskPeriodicCreate( TSK_A, ( const char * ) "A", configMINIMAL_STACK_SIZE, NULL, 1, NULL, TSK_A_PERIOD, 2, 0.5, 0 );
+    xTaskPeriodicCreate( TSK_B, ( const char * ) "B", configMINIMAL_STACK_SIZE, NULL, 1, NULL, TSK_B_PERIOD, 6, 1, 0 );
 
     vTaskStartScheduler();
 
@@ -25,45 +30,57 @@ int main( void ) {
 
 void TSK_A( void *pvParameters ) {
     TickType_t xLastWakeTimeA;
-    const TickType_t xFrequency = 5;
+    const TickType_t xFrequency = TSK_A_PERIOD;
     TickType_t count = 2;
     TickType_t xNextTime;
     TickType_t xTime;
     xLastWakeTimeA = 0;
+    int A_Tard = 0;
     for(;;) {
         xTime= xTaskGetTickCount();
         //While loop that simulates capacity
+        printf( "task A start\n" );
         while(count != 0) {
             if((xNextTime = xTaskGetTickCount()) > xTime) {
                 count--;
                 xTime = xNextTime;
             }
         }
-        printf( "task A \n" );
-        count = 2;
+        // printf( "task A end \n" );
+        // printf( "last wake time: %d\n", xLastWakeTimeA );
+        // if( xLastWakeTimeA + xFrequency < xTaskGetTickCount() ) {
+        //     A_Tard += xTaskGetTickCount() - xLastWakeTimeA - xFrequency;
+        // }
+        // printf( "tardiness: %d\n", A_Tard );
+        count = 2;  
         vTaskDelayUntil(&xLastWakeTimeA, xFrequency);
     }
 }
 
 void TSK_B( void *pvParameters ) {
     TickType_t xLastWakeTimeB;
-    const TickType_t xFrequency = 5;
-    TickType_t count = 2;
+    const TickType_t xFrequency = TSK_B_PERIOD;
+    TickType_t count = 6;
     TickType_t xNextTime;
     TickType_t xTime;
     xLastWakeTimeB = 0;
+    int B_Tard = 0;
     for(;;) {
         xTime= xTaskGetTickCount();
+        printf( "task B start\n" );
         //While loop that simulates capacity
         while(count != 0) {
             if((xNextTime = xTaskGetTickCount()) > xTime) {
                 count--;
                 xTime = xNextTime;
-                
             }
         }
-        printf( "task B \n" );
-        count = 2;
+        // printf( "task B end\n" );
+        // if( xLastWakeTimeB + xFrequency < xTaskGetTickCount() ) {
+        //     B_Tard += xTaskGetTickCount() - xLastWakeTimeB - xFrequency;
+        // }
+        // printf( "tardiness: %d\n", B_Tard );
+        count = 6;
         vTaskDelayUntil(&xLastWakeTimeB, xFrequency);
     }
 }

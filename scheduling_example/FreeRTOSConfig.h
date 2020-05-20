@@ -73,6 +73,8 @@
 #define configUSE_EDF_SCHEDULER 				0
 #define configUSE_GP_SCHEDULER					1
 
+#define configTRACE_TARDINESS					1
+
 /* Optional functions - most linkers will remove unused functions anyway. */
 #define INCLUDE_vTaskPrioritySet                1
 #define INCLUDE_uxTaskPriorityGet               1
@@ -106,12 +108,13 @@
 
 #define traceTASK_SWITCHED_IN()				\
 	taskENTER_CRITICAL();					\
-	printf( "task %s switched IN\n", pxCurrentTCB->pcTaskName );	\
+	printf( "task %s switched IN %f\n", pxCurrentTCB->pcTaskName, pxCurrentTCB->xPriorityValue );	\
 	taskEXIT_CRITICAL();
 
 #define traceTASK_SWITCHED_OUT()			\
 	taskENTER_CRITICAL();					\
-	printf( "task %s is switched OUT\n", pxCurrentTCB->pcTaskName );	\
+	printf( "task %s is switched OUT %f\n", pxCurrentTCB->pcTaskName, pxCurrentTCB->xPriorityValue );	\
+	printf( "tardiness %f\n", xTardiness );																\
 	taskEXIT_CRITICAL();
 
 #define traceMOVED_TASK_TO_READY_STATE(xTask)			\

@@ -39,7 +39,7 @@ SRCS += $(PORT_SOURCES)
 INCLUDE_DIRS += $(PORT_INCLUDE_DIRS)
 
 LDFLAGS += -lrt -lpthread -lstdc++ -T freertos_linux.ld
-CPPFLAGS += -g3 -Wall -Wextra -Wundef -Wshadow
+CPPFLAGS += -g -Wall -Wextra -Wundef -Wshadow
 
 # Build files
 OBJS   := $(SRCS:%=$(BUILD_DIR)/%.o)

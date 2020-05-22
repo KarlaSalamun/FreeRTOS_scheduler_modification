@@ -117,8 +117,8 @@
 	printf( "tardiness %f\n", xTardiness );																\
 	taskEXIT_CRITICAL();
 
-#define traceMOVED_TASK_TO_READY_STATE(xTask)			\
-	printf( "task %s is ready, priority %f\n", xTask->pcTaskName, xTask->xPriorityValue );
+// #define traceMOVED_TASK_TO_READY_STATE(xTask)			\
+// 	printf( "task %s is ready, priority %f\n", xTask->pcTaskName, xTask->xPriorityValue );
 
 #define traceTASK_CREATE(xTask)					\
 	printf("task %s is successfully created\n", pxNewTCB->pcTaskName );

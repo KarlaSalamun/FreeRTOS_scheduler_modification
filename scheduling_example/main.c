@@ -19,8 +19,8 @@ uint32_t tardiness = 0;
 int main( void ) {
     vPortEarlyInit();
 
-    xTaskPeriodicCreate( TSK_A, ( const char * ) "A", configMINIMAL_STACK_SIZE, NULL, 1, NULL, TSK_A_PERIOD, 2, 0.5, 0 );
-    xTaskPeriodicCreate( TSK_B, ( const char * ) "B", configMINIMAL_STACK_SIZE, NULL, 1, NULL, TSK_B_PERIOD, 6, 1, 0 );
+    xTaskPeriodicCreate( TSK_A, ( const char * ) "A", configMINIMAL_STACK_SIZE, NULL, 1, NULL, TSK_A_PERIOD, 2, 1, 0 );
+    xTaskPeriodicCreate( TSK_B, ( const char * ) "B", configMINIMAL_STACK_SIZE, NULL, 1, NULL, TSK_B_PERIOD, 6, 0.5, 0 );
 
     vTaskStartScheduler();
 
@@ -31,7 +31,7 @@ int main( void ) {
 void TSK_A( void *pvParameters ) {
     TickType_t xLastWakeTimeA;
     const TickType_t xFrequency = TSK_A_PERIOD;
-    TickType_t count = 2;
+    volatile int count = 2;
     TickType_t xNextTime;
     TickType_t xTime;
     xLastWakeTimeA = 0;
@@ -39,7 +39,7 @@ void TSK_A( void *pvParameters ) {
     for(;;) {
         xTime= xTaskGetTickCount();
         //While loop that simulates capacity
-        printf( "task A start\n" );
+        // printf( "task A start\n" );
         while(count != 0) {
             if((xNextTime = xTaskGetTickCount()) > xTime) {
                 count--;
@@ -60,14 +60,14 @@ void TSK_A( void *pvParameters ) {
 void TSK_B( void *pvParameters ) {
     TickType_t xLastWakeTimeB;
     const TickType_t xFrequency = TSK_B_PERIOD;
-    TickType_t count = 6;
+    volatile int count = 6;
     TickType_t xNextTime;
     TickType_t xTime;
     xLastWakeTimeB = 0;
     int B_Tard = 0;
     for(;;) {
         xTime= xTaskGetTickCount();
-        printf( "task B start\n" );
+        // printf( "task B start\n" );
         //While loop that simulates capacity
         while(count != 0) {
             if((xNextTime = xTaskGetTickCount()) > xTime) {

@@ -11,16 +11,46 @@
 void TSK_A( void *pvParameters );
 void TSK_B( void *pvParameters );
 
-uint32_t tardiness = 0;
+extern volatile double xTardiness;
+uint32_t hperiod;
 
 #define TSK_A_PERIOD 5
 #define TSK_B_PERIOD 8
 
-int main( void ) {
+typedef struct _task {
+    int period;
+    int duration;
+    double weight;
+} _task;
+
+FILE *output;
+double overload;
+
+int main( int argc, char *argv[] ) {
+
+    char filename[10];
+    strcpy( filename, "inputs/" );
+    strncat( filename, argv[1], strlen( argv ) );
+
     vPortEarlyInit();
 
-    xTaskPeriodicCreate( TSK_A, ( const char * ) "A", configMINIMAL_STACK_SIZE, NULL, 1, NULL, TSK_A_PERIOD, 2, 1, 0 );
-    xTaskPeriodicCreate( TSK_B, ( const char * ) "B", configMINIMAL_STACK_SIZE, NULL, 1, NULL, TSK_B_PERIOD, 6, 0.5, 0 );
+    _task tasks[5];
+    FILE *fd = fopen( filename, "r+" );
+    output = fopen( "outputs/edf", "a+" );
+
+    fscanf( fd, "%lf", &overload );
+
+    for( int i=0; i<5; i++ ) {
+        fscanf( fd, "%d %d %lf", &tasks[i].period, &tasks[i].duration, &tasks[i].weight );
+
+        const char name[2];
+        sprintf( name, "%d", i );
+
+        xTaskPeriodicCreate( TSK_A, name, configMINIMAL_STACK_SIZE, (void const *)&tasks[i], 1, NULL,  tasks[i].period, tasks[i].duration, tasks[i].weight, 0 );
+        // assert( tasks[i].weight == 1 );
+    }
+
+    fscanf( fd, "%d", &hperiod );
 
     vTaskStartScheduler();
 
@@ -29,12 +59,16 @@ int main( void ) {
 }
 
 void TSK_A( void *pvParameters ) {
+    _task *params = ( _task * )pvParameters;
     TickType_t xLastWakeTimeA;
-    const TickType_t xFrequency = TSK_A_PERIOD;
-    volatile int count = 2;
+    TickType_t xNextWakeTimeA;
+    // const TickType_t xFrequency = TSK_A_PERIOD;
+    const TickType_t xFrequency = params->period;
+    volatile int count = params->duration;
     TickType_t xNextTime;
     TickType_t xTime;
     xLastWakeTimeA = 0;
+    xNextWakeTimeA = params->period;
     int A_Tard = 0;
     for(;;) {
         xTime= xTaskGetTickCount();
@@ -46,47 +80,20 @@ void TSK_A( void *pvParameters ) {
                 xTime = xNextTime;
             }
         }
-        // printf( "task A end \n" );
-        // printf( "last wake time: %d\n", xLastWakeTimeA );
-        // if( xLastWakeTimeA + xFrequency < xTaskGetTickCount() ) {
-        //     A_Tard += xTaskGetTickCount() - xLastWakeTimeA - xFrequency;
-        // }
-        // printf( "tardiness: %d\n", A_Tard );
-        count = 2;  
+        count = params->duration;
+        xNextWakeTimeA = xLastWakeTimeA + params->period; 
         vTaskDelayUntil(&xLastWakeTimeA, xFrequency);
     }
 }
 
-void TSK_B( void *pvParameters ) {
-    TickType_t xLastWakeTimeB;
-    const TickType_t xFrequency = TSK_B_PERIOD;
-    volatile int count = 6;
-    TickType_t xNextTime;
-    TickType_t xTime;
-    xLastWakeTimeB = 0;
-    int B_Tard = 0;
-    for(;;) {
-        xTime= xTaskGetTickCount();
-        // printf( "task B start\n" );
-        //While loop that simulates capacity
-        while(count != 0) {
-            if((xNextTime = xTaskGetTickCount()) > xTime) {
-                count--;
-                xTime = xNextTime;
-            }
-        }
-        // printf( "task B end\n" );
-        // if( xLastWakeTimeB + xFrequency < xTaskGetTickCount() ) {
-        //     B_Tard += xTaskGetTickCount() - xLastWakeTimeB - xFrequency;
-        // }
-        // printf( "tardiness: %d\n", B_Tard );
-        count = 6;
-        vTaskDelayUntil(&xLastWakeTimeB, xFrequency);
-    }
-}
-
 void vApplicationTickHook( void ) {
-    printf( "TICK: %d ", (int)xTaskGetTickCount() );
+    int xTime = ( int )xTaskGetTickCount();
+    // printf( "TICK: %d\n", xTime );
+    if( xTime >= 2 * hperiod ) {
+        fprintf( output, "%lf %lf %d\n", overload, 0.5 * xTardiness / (double) hperiod, hperiod );
+        fclose( output );
+        exit(0);
+    }
 }
 
 const struct timespec ts = { .tv_sec = 0, .tv_nsec = 200000 };

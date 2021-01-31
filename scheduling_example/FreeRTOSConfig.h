@@ -11,7 +11,7 @@
 #define configUSE_PORT_OPTIMISED_TASK_SELECTION     ( 0 )
 #define configUSE_TICKLESS_IDLE                     ( 0 )
 #define configCPU_CLOCK_HZ                          ( 60000000 )
-#define configTICK_RATE_HZ                          ( 1 )
+#define configTICK_RATE_HZ                          ( 10000 )
 #define configMAX_PRIORITIES                        ( 5 )
 #define configMINIMAL_STACK_SIZE                    ( 128 )
 #define configMAX_TASK_NAME_LEN                     ( 16 )
@@ -39,7 +39,7 @@
 
 /* Hook function related definitions. */
 #define configUSE_IDLE_HOOK                     1
-#define configUSE_TICK_HOOK                     0
+#define configUSE_TICK_HOOK                     1
 #define configCHECK_FOR_STACK_OVERFLOW          0
 #define configUSE_MALLOC_FAILED_HOOK            0
 #define configUSE_DAEMON_TASK_STARTUP_HOOK      0
@@ -94,6 +94,9 @@
 #define INCLUDE_xTaskGetHandle                  0
 #define INCLUDE_xTaskResumeFromISR              1
 
+extern volatile double tardiness;
+
+/*
 
 #define traceTASK_SUSPEND( xTask )					\
 	printf( "task %s suspended\n", pxCurrentTCB->pcTaskName );
@@ -111,12 +114,6 @@
 	printf( "task %s switched IN %f\n", pxCurrentTCB->pcTaskName, pxCurrentTCB->xPriorityValue );	\
 	taskEXIT_CRITICAL();
 
-#define traceTASK_SWITCHED_OUT()			\
-	taskENTER_CRITICAL();					\
-	printf( "task %s is switched OUT %f\n", pxCurrentTCB->pcTaskName, pxCurrentTCB->xPriorityValue );	\
-	printf( "tardiness %f\n", xTardiness );																\
-	taskEXIT_CRITICAL();
-
 // #define traceMOVED_TASK_TO_READY_STATE(xTask)			\
 // 	printf( "task %s is ready, priority %f\n", xTask->pcTaskName, xTask->xPriorityValue );
 
@@ -125,3 +122,11 @@
 
 #define traceTASK_DELAY_UNTIL( xTimeToWake )			\
 	printf( "task %s delayed until %d\n", pxCurrentTCB->pcTaskName, (int)xTimeToWake );
+
+#define traceTASK_SWITCHED_OUT()			\
+	taskENTER_CRITICAL();					\
+	printf( "task %s is switched OUT %f\n", pxCurrentTCB->pcTaskName, pxCurrentTCB->xPriorityValue );	\
+	printf( "tardiness %f\n", xTardiness );																\
+	taskEXIT_CRITICAL();
+
+*/

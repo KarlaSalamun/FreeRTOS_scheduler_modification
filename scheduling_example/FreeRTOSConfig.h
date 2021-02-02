@@ -71,7 +71,7 @@
 #define configINCLUDE_APPLICATION_DEFINED_PRIVILEGED_FUNCTIONS 0
 
 #define configUSE_EDF_SCHEDULER 				0
-#define configUSE_GP_SCHEDULER					0
+#define configUSE_GP_SCHEDULER					1
 
 #define configTRACE_TARDINESS					1
 

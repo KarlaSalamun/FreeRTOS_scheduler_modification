@@ -8,11 +8,9 @@ from operator import itemgetter
 
 utils = []
 t_edf = []
-t_edf_tuples = []
 t_default = []
 default_tuples = []
-u_edf = []
-u_edf_tuples = []
+edf_tuples = []
 u_default = []
 
 def parse_file( filename ):
@@ -83,20 +81,26 @@ for file in listdir( 'inputs/' ):
     call( filename, shell=True )
 
 default_tuples, x = parse_file( 'outputs/default' )
+edf_tuples, x = parse_file( 'outputs/edf' )
 
 x_round = compute_mean_x( x )
 
 t_sum_default, u_sum_default = compute_mean_data( x_round, default_tuples )
+t_sum_edf, u_sum_edf = compute_mean_data( x_round, edf_tuples )
 
 fig = plt.figure()
 ax1 = fig.add_subplot(211)
 ax1.scatter( x_round, t_sum_default, label='default scheduler' )
-ax1.plot( x_round, t_sum_default )
+ax1.scatter( x_round, t_sum_edf, label = 'EDF' )
+ax1.plot( x_round, t_sum_default, label='default scheduler'  )
+ax1.plot( x_round, t_sum_edf, label='EDF' )
 ax1.set_xlabel( 'utilization factor' )
 ax1.set_ylabel( 'normalized weighted tardiness' )
 ax2 = fig.add_subplot(212)
 ax2.scatter( x_round, u_sum_default, label='default scheduler' )
-ax2.plot( x_round, u_sum_default )
+ax2.scatter( x_round, u_sum_edf, label='EDF' )
+ax2.plot( x_round, u_sum_default, label='default scheduler' )
+ax2.plot( x_round, u_sum_edf, label='EDF' )
 ax2.set_xlabel( 'utilization factor' )
 ax2.set_ylabel( 'normalized number of late jobs' )
 plt.legend()

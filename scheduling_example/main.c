@@ -44,7 +44,7 @@ int main( int argc, char *argv[] ) {
 
     _task tasks[TSK_NUM];
     FILE *fd = fopen( filename, "r+" );
-    output = fopen( "outputs/default", "a+" );
+    output = fopen( "outputs/edf", "a+" );
 
     for( int i=0; i<TSK_NUM; i++ ) {
         fscanf( fd, "%d %d %lf", &tasks[i].period, &tasks[i].duration, &tasks[i].weight );
@@ -52,8 +52,8 @@ int main( int argc, char *argv[] ) {
         char name[TSK_NUM];
         sprintf( name, "%d", i );
 
-        xTaskCreate( TSK_A, name, configMINIMAL_STACK_SIZE, ( void * const )&tasks[i], (int)tasks[i].weight * 10, NULL );
-        // assert( tasks[i].weight == 1 );
+        xTaskPeriodicCreate( TSK_A, name, configMINIMAL_STACK_SIZE, ( void * const )&tasks[i], 1, 
+            NULL, tasks[i].period, tasks[i].duration, tasks[i].weight, 0 );
     }
     mean_proctime /= TSK_NUM;
 

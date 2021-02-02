@@ -12,7 +12,7 @@
 #define configUSE_TICKLESS_IDLE                     ( 0 )
 #define configCPU_CLOCK_HZ                          ( 60000000 )
 #define configTICK_RATE_HZ                          ( 10000 )
-#define configMAX_PRIORITIES                        ( 5 )
+#define configMAX_PRIORITIES                        ( 12 )
 #define configMINIMAL_STACK_SIZE                    ( 128 )
 #define configMAX_TASK_NAME_LEN                     ( 16 )
 #define configUSE_16_BIT_TICKS                      ( 0 )
@@ -55,7 +55,7 @@
 
 /* Software timer related definitions. */
 #define configUSE_TIMERS                        0
-#define configTIMER_TASK_PRIORITY               3
+#define configTIMER_TASK_PRIORITY               12
 #define configTIMER_QUEUE_LENGTH                10
 #define configTIMER_TASK_STACK_DEPTH            configMINIMAL_STACK_SIZE
 
@@ -71,7 +71,7 @@
 #define configINCLUDE_APPLICATION_DEFINED_PRIVILEGED_FUNCTIONS 0
 
 #define configUSE_EDF_SCHEDULER 				0
-#define configUSE_GP_SCHEDULER					1
+#define configUSE_GP_SCHEDULER					0
 
 #define configTRACE_TARDINESS					1
 
@@ -111,9 +111,8 @@ extern volatile double tardiness;
 
 #define traceTASK_SWITCHED_IN()				\
 	taskENTER_CRITICAL();					\
-	printf( "task %s switched IN %f\n", pxCurrentTCB->pcTaskName, pxCurrentTCB->xPriorityValue );	\
+	printf( "task %s switched IN\n", pxCurrentTCB->pcTaskName );	\
 	taskEXIT_CRITICAL();
-
 // #define traceMOVED_TASK_TO_READY_STATE(xTask)			\
 // 	printf( "task %s is ready, priority %f\n", xTask->pcTaskName, xTask->xPriorityValue );
 
@@ -125,8 +124,7 @@ extern volatile double tardiness;
 
 #define traceTASK_SWITCHED_OUT()			\
 	taskENTER_CRITICAL();					\
-	printf( "task %s is switched OUT %f\n", pxCurrentTCB->pcTaskName, pxCurrentTCB->xPriorityValue );	\
-	printf( "tardiness %f\n", xTardiness );																\
+	printf( "task %s is switched OUT\n", pxCurrentTCB->pcTaskName );	\
 	taskEXIT_CRITICAL();
 
 */

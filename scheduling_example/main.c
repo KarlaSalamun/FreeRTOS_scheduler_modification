@@ -3,6 +3,8 @@
 #include <signal.h>
 #include <errno.h>
 #include <pthread.h>
+#include <string.h>
+#include <stdlib.h>
 
 #include "FreeRTOS.h"
 #include "FreeRTOSConfig.h"
@@ -12,10 +14,18 @@ void TSK_A( void *pvParameters );
 void TSK_B( void *pvParameters );
 
 extern volatile double xTardiness;
-uint32_t hperiod;
+double total_tardiness;
+double unit_tardiness;
+int hperiod;
+int job_num;
+double mean_proctime;
+double overload;
+double mean_weight;
+FILE *output;
 
 #define TSK_A_PERIOD 5
 #define TSK_B_PERIOD 8
+#define TSK_NUM      5
 
 typedef struct _task {
     int period;
@@ -23,34 +33,32 @@ typedef struct _task {
     double weight;
 } _task;
 
-FILE *output;
-double overload;
 
 int main( int argc, char *argv[] ) {
 
-    char filename[10];
+    char filename[12];
     strcpy( filename, "inputs/" );
-    strncat( filename, argv[1], strlen( argv ) );
+    strncat( filename, argv[1], strlen( argv[1] ) );
 
     vPortEarlyInit();
 
-    _task tasks[5];
+    _task tasks[TSK_NUM];
     FILE *fd = fopen( filename, "r+" );
-    output = fopen( "outputs/edf", "a+" );
+    output = fopen( "outputs/default", "a+" );
 
-    fscanf( fd, "%lf", &overload );
-
-    for( int i=0; i<5; i++ ) {
+    for( int i=0; i<TSK_NUM; i++ ) {
         fscanf( fd, "%d %d %lf", &tasks[i].period, &tasks[i].duration, &tasks[i].weight );
 
-        const char name[2];
+        char name[TSK_NUM];
         sprintf( name, "%d", i );
 
-        xTaskPeriodicCreate( TSK_A, name, configMINIMAL_STACK_SIZE, (void const *)&tasks[i], 1, NULL,  tasks[i].period, tasks[i].duration, tasks[i].weight, 0 );
+        xTaskCreate( TSK_A, name, configMINIMAL_STACK_SIZE, ( void * const )&tasks[i], (int)tasks[i].weight * 10, NULL );
         // assert( tasks[i].weight == 1 );
     }
+    mean_proctime /= TSK_NUM;
 
     fscanf( fd, "%d", &hperiod );
+    fscanf( fd, "%lf", &overload );
 
     vTaskStartScheduler();
 
@@ -69,7 +77,6 @@ void TSK_A( void *pvParameters ) {
     TickType_t xTime;
     xLastWakeTimeA = 0;
     xNextWakeTimeA = params->period;
-    int A_Tard = 0;
     for(;;) {
         xTime= xTaskGetTickCount();
         //While loop that simulates capacity
@@ -80,9 +87,20 @@ void TSK_A( void *pvParameters ) {
                 xTime = xNextTime;
             }
         }
+        taskENTER_CRITICAL();
+        if( xLastWakeTimeA + params->period <= xTime ) {
+            total_tardiness += params->weight * ( xTime - ( xLastWakeTimeA + params->period ) );
+            unit_tardiness += params->weight;
+        }
+        mean_weight += params->weight;
+        mean_proctime += params->duration;
+        job_num++;
         count = params->duration;
         xNextWakeTimeA = xLastWakeTimeA + params->period; 
         vTaskDelayUntil(&xLastWakeTimeA, xFrequency);
+        assert( xLastWakeTimeA % xFrequency == 0 );
+        assert( xNextWakeTimeA == xLastWakeTimeA );
+        taskEXIT_CRITICAL();
     }
 }
 
@@ -90,7 +108,12 @@ void vApplicationTickHook( void ) {
     int xTime = ( int )xTaskGetTickCount();
     // printf( "TICK: %d\n", xTime );
     if( xTime >= 2 * hperiod ) {
-        fprintf( output, "%lf %lf %d\n", overload, 0.5 * xTardiness / (double) hperiod, hperiod );
+        mean_proctime /= job_num;
+        mean_weight /= job_num;
+        fprintf( output, "%lf %lf %d %d %lf %lf %lf\n", overload, total_tardiness, hperiod, job_num, mean_proctime, mean_weight, unit_tardiness );
+        if( overload > 1 ) {
+            assert( total_tardiness != 0 );
+        }
         fclose( output );
         exit(0);
     }

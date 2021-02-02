@@ -52,7 +52,7 @@ int main( int argc, char *argv[] ) {
         char name[TSK_NUM];
         sprintf( name, "%d", i );
 
-        xTaskCreate( TSK_A, name, configMINIMAL_STACK_SIZE, ( void * const )&tasks[i], (int)tasks[i].weight * 10, NULL );
+        xTaskCreate( TSK_A, name, configMINIMAL_STACK_SIZE, ( void * const )&tasks[i], 10 - ((int)tasks[i].weight * 10), NULL );
         // assert( tasks[i].weight == 1 );
     }
     mean_proctime /= TSK_NUM;

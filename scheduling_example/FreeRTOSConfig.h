@@ -95,26 +95,11 @@
 #define INCLUDE_xTaskResumeFromISR              1
 
 extern volatile double tardiness;
-
 /*
-
-#define traceTASK_SUSPEND( xTask )					\
-	printf( "task %s suspended\n", pxCurrentTCB->pcTaskName );
-
-#define traceTASK_RESUME( xTask )					\
-	printf( "task %s resumed\n", pxCurrentTCB->pcTaskName );
-
 #define traceTASK_INCREMENT_TICK( xTickCount )		\
 	taskENTER_CRITICAL();					\
-	printf( "TICK: %d\n", (int)xTickCount );	\
+	printf( "TICK: %d\n", (int)xTickCount + 1 );	\
 	taskEXIT_CRITICAL();
-
-#define traceTASK_SWITCHED_IN()				\
-	taskENTER_CRITICAL();					\
-	printf( "task %s switched IN\n", pxCurrentTCB->pcTaskName );	\
-	taskEXIT_CRITICAL();
-// #define traceMOVED_TASK_TO_READY_STATE(xTask)			\
-// 	printf( "task %s is ready, priority %f\n", xTask->pcTaskName, xTask->xPriorityValue );
 
 #define traceTASK_CREATE(xTask)					\
 	printf("task %s is successfully created\n", pxNewTCB->pcTaskName );
@@ -122,9 +107,16 @@ extern volatile double tardiness;
 #define traceTASK_DELAY_UNTIL( xTimeToWake )			\
 	printf( "task %s delayed until %d\n", pxCurrentTCB->pcTaskName, (int)xTimeToWake );
 
+*/
+/*
 #define traceTASK_SWITCHED_OUT()			\
 	taskENTER_CRITICAL();					\
 	printf( "task %s is switched OUT\n", pxCurrentTCB->pcTaskName );	\
 	taskEXIT_CRITICAL();
-
+*/
+/*
+#define traceTASK_SWITCHED_IN()				\
+	taskENTER_CRITICAL();					\
+	printf( "task %s switched IN\n", pxCurrentTCB->pcTaskName );	\
+	taskEXIT_CRITICAL();
 */

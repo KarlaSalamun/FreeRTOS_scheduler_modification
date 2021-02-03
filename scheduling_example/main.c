@@ -31,6 +31,8 @@ typedef struct _task {
     int period;
     int duration;
     double weight;
+    int id;
+    int remaining;
 } _task;
 
 
@@ -48,6 +50,9 @@ int main( int argc, char *argv[] ) {
 
     for( int i=0; i<TSK_NUM; i++ ) {
         fscanf( fd, "%d %d %lf", &tasks[i].period, &tasks[i].duration, &tasks[i].weight );
+
+        tasks[i].id = i;
+        tasks[i].remaining = tasks[i].duration;
 
         char name[TSK_NUM];
         sprintf( name, "%d", i );
@@ -72,35 +77,47 @@ void TSK_A( void *pvParameters ) {
     TickType_t xNextWakeTimeA;
     // const TickType_t xFrequency = TSK_A_PERIOD;
     const TickType_t xFrequency = params->period;
-    volatile int count = params->duration;
     TickType_t xNextTime;
     TickType_t xTime;
     xLastWakeTimeA = 0;
     xNextWakeTimeA = params->period;
     for(;;) {
         xTime= xTaskGetTickCount();
+        // taskENTER_CRITICAL();
+        // printf( "[task %d] START\n", params->id );
+        // taskEXIT_CRITICAL();
         //While loop that simulates capacity
         // printf( "task A start\n" );
-        while(count != 0) {
+        while(1) {
             if((xNextTime = xTaskGetTickCount()) > xTime) {
-                count--;
+                // taskENTER_CRITICAL();
+                // printf( "[task %d] remaining %d\n", params->id, params->remaining );
+                // taskEXIT_CRITICAL();
                 xTime = xNextTime;
+                // vTaskSuspendAll();
+                params->remaining--;
+                if( params->remaining == 0 ) {
+                    taskENTER_CRITICAL();
+                    break;
+                }
+                else {
+                    // xTaskResumeAll();
+                }
             }
         }
-        taskENTER_CRITICAL();
         if( xLastWakeTimeA + params->period <= xTime ) {
             total_tardiness += params->weight * ( xTime - ( xLastWakeTimeA + params->period ) );
+            assert(overload > 1);
             unit_tardiness += params->weight;
         }
         mean_weight += params->weight;
         mean_proctime += params->duration;
         job_num++;
-        count = params->duration;
+        params->remaining = params->duration;
         xNextWakeTimeA = xLastWakeTimeA + params->period; 
         vTaskDelayUntil(&xLastWakeTimeA, xFrequency);
-        assert( xLastWakeTimeA % xFrequency == 0 );
-        assert( xNextWakeTimeA == xLastWakeTimeA );
         taskEXIT_CRITICAL();
+        // xTaskResumeAll();
     }
 }
 

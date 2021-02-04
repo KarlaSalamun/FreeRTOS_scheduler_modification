@@ -35,59 +35,28 @@ def parse_file( filename ):
 
 	return tuples, x
 
-def compute_mean_x( x ):
-	x_round = []
-	for x_item in x:
-		if x_item < 0.09 or x_item > 1.60:
-			continue
-		else:
-			for step in range ( 90, 150, 10 ):
-				if x_item > ( step/100 - 0.025 ) and x_item < ( step/100 + 0.025 ):
-					x_item = step/100
-					x_round.append( x_item )
-
-	x_round = list( set( x_round ) )
-	x_round.sort()
-
-	return x_round
 
 def compute_mean_data( x, tuples ):
-	t_sum_1 = []
-	t_sum_2 = []
-	u_sum_1 = []
-	u_sum_2 = []
+	t_sum = []
+	u_sum = []
 	for x_val in x:
-		tmp_sum_t_1 = 0
-		tmp_sum_t_2 = 0
-		tmp_sum_u_2 = 0
-		tmp_sum_u_1 = 0
-		cnt_1 = 0
-		cnt_2 = 0
+		tmp_sum_t = 0
+		tmp_sum_u = 0
+		cnt = 0
 		for tuple in tuples:
-			if tuple[0] > x_val - 0.05 and tuple[0] < x_val + 0.05:
-				if tuple[0] < 0.95:
-					tmp_sum_t_1 += tuple[1]
-					tmp_sum_u_1 += tuple[2]
-					cnt_1 = cnt_1+1
-				else:
-					tmp_sum_t_2 += tuple[1]
-					tmp_sum_u_2 += tuple[2]
-					cnt_2 = cnt_2+1
+			if tuple[0] > x_val - 0.1 and tuple[0] <= x_val:
+				tmp_sum_t += tuple[1]
+				tmp_sum_u += tuple[2]
+				cnt = cnt + 1
 			else:
-				if cnt_1 > 0 and x_val < 1:
-					tmp_sum_t_1 = tmp_sum_t_1 / cnt_1
-					tmp_sum_u_1 = tmp_sum_u_1 / cnt_1
-					t_sum_1.append( tmp_sum_t_1 )
-					u_sum_1.append( tmp_sum_u_1 )
-					break
-				elif cnt_2 > 0 and x_val > 1:
-					tmp_sum_t_2 = tmp_sum_t_2 / cnt_2
-					tmp_sum_u_2 = tmp_sum_u_2 / cnt_2
-					t_sum_2.append( tmp_sum_t_2 )
-					u_sum_2.append( tmp_sum_u_2 )
+				if cnt > 0:
+					tmp_sum_t = tmp_sum_t / cnt
+					tmp_sum_u = tmp_sum_u / cnt
+					t_sum.append( tmp_sum_t )
+					u_sum.append( tmp_sum_u )
 					break
 
-	return t_sum_1, t_sum_2, u_sum_1, u_sum_2
+	return t_sum, u_sum
 
 ################# PROGRAM BEGINS HERE #####################################
 
@@ -96,42 +65,85 @@ edf_tuples, x = parse_file( 'outputs/edf' )
 wspt_tuples, x = parse_file( 'outputs/wspt' )
 edf_m_tuples, x = parse_file( 'outputs/edf_modif' )
 wsrt_tuples, x = parse_file( 'outputs/wsrt' )
+rms_tuples, x = parse_file( 'outputs/rms' )
+lst_tuples, x = parse_file( 'outputs/lst' )
 
-x_round = compute_mean_x( x )
+x_round = [0.1 * x for x in range(5, 16+1)]
 
-t_sum_default_1, t_sum_default_2, u_sum_default_1, u_sum_default_2 = compute_mean_data( x_round, default_tuples )
-t_sum_edf_1, t_sum_edf_2, u_sum_edf_1, u_sum_edf_2 = compute_mean_data( x_round, edf_tuples )
-t_sum_wspt_1, t_sum_wspt_2, u_sum_wspt_1, u_sum_wspt_2 = compute_mean_data( x_round, wspt_tuples )
-t_sum_edf_m_1, t_sum_edf_m_2, u_sum_edf_m_1, u_sum_edf_m_2 = compute_mean_data( x_round, edf_m_tuples )
-t_sum_wsrt_1, t_sum_wsrt_2, u_sum_wsrt_1, u_sum_wsrt_2 = compute_mean_data( x_round, wsrt_tuples )
+t_sum_default, u_sum_default = compute_mean_data( x_round, default_tuples )
+t_sum_edf, u_sum_edf = compute_mean_data( x_round, edf_tuples )
+t_sum_wspt, u_sum_wspt = compute_mean_data( x_round, wspt_tuples )
+t_sum_edf_m, u_sum_edf_m = compute_mean_data( x_round, edf_m_tuples )
+t_sum_wsrt, u_sum_wsrt = compute_mean_data( x_round, wsrt_tuples )
+t_sum_rms, u_sum_rms = compute_mean_data( x_round, rms_tuples )
+t_sum_lst, u_sum_lst = compute_mean_data( x_round, lst_tuples )
 
-fig1 = plt.figure()
-fig2 = plt.figure()
-ax1 = fig1.add_subplot(121)
-ax1.scatter( x_round[0:1], t_sum_default_1, label='default scheduler' )
-ax1.scatter( x_round[0:1], t_sum_edf_1, label = 'EDF' )
-ax1.scatter( x_round[0:1], t_sum_wspt_1, label = 'WSPT' )
-ax1.scatter( x_round[0:1], t_sum_edf_m_1, label = 'WEDF' )
-ax1.scatter( x_round[0:1], t_sum_wsrt_1, label = 'WSRT' )
-ax1.plot( x_round[0:1], t_sum_default_1, label='default scheduler'  )
-ax1.plot( x_round[0:1], t_sum_edf_1, label='EDF' )
-ax1.plot( x_round[0:1], t_sum_wspt_1, label='WSPT' )
-ax1.plot( x_round[0:1], t_sum_edf_m_1, label='WEDF' )
-ax1.plot( x_round[0:1], t_sum_wsrt_1, label='WSRT' )
-ax1.set_xlabel( 'utilization factor' )
-ax1.set_ylabel( 'normalized weighted tardiness' )
-ax2 = fig2.add_subplot(122)
-ax2.scatter( x_round[2:6], u_sum_default_2, label='default scheduler' )
-ax2.scatter( x_round[2:6], u_sum_edf_2, label='EDF' )
-ax2.scatter( x_round[2:6], u_sum_wspt_2, label='WSPT' )
-ax2.scatter( x_round[2:6], u_sum_edf_m_2, label='WEDF' )
-ax2.scatter( x_round[2:6], u_sum_wsrt_2, label = 'WSRT' )
-ax2.plot( x_round[2:6], u_sum_default_2, label='default scheduler' )
-ax2.plot( x_round[2:6], u_sum_edf_2, label='EDF' )
-ax2.plot( x_round[2:6], u_sum_wspt_2, label='WSPT' )
-ax2.plot( x_round[2:6], u_sum_edf_m_2, label='WEDF' )
-ax2.plot( x_round[2:6], u_sum_wsrt_2, label='WSRT' )
-ax2.set_xlabel( 'utilization factor' )
-ax2.set_ylabel( 'normalized number of late jobs' )
+plt.figure(1)
+plt.scatter( x_round, t_sum_default, label='default scheduler' )
+plt.scatter( x_round, t_sum_edf, label = 'EDF' )
+plt.scatter( x_round, t_sum_wspt, label = 'WSPT' )
+# plt.scatter( x_round, t_sum_edf_m, label = 'WEDF' )
+plt.scatter( x_round, t_sum_wsrt, label = 'WSRT' )
+plt.scatter( x_round, t_sum_rms, label = 'RMS' )
+plt.scatter( x_round, t_sum_lst, label = 'LST' )
+
+plt.plot( x_round, t_sum_default, label='default scheduler' )
+plt.plot( x_round, t_sum_edf, label = 'EDF' )
+plt.plot( x_round, t_sum_wspt, label = 'WSPT' )
+# plt.scatter( x_round, t_sum_edf_m, label = 'WEDF' )
+plt.plot( x_round, t_sum_wsrt, label = 'WSRT' )
+plt.plot( x_round, t_sum_rms, label = 'RMS' )
+plt.plot( x_round, t_sum_lst, label = 'LST' )
+
+plt.xlabel( 'utilization factor' )
+plt.ylabel( 'normalized weighted tardiness' )
+
+plt.legend()
+
+plt.figure(2)
+plt.scatter( x_round, u_sum_default, label='default scheduler' )
+plt.scatter( x_round, u_sum_edf, label = 'EDF' )
+plt.scatter( x_round, u_sum_wspt, label = 'WSPT' )
+# plt.scatter( x_round, t_sum_edf_m, label = 'WEDF' )
+plt.scatter( x_round, u_sum_wsrt, label = 'WSRT' )
+plt.scatter( x_round, u_sum_rms, label = 'RMS' )
+plt.scatter( x_round, u_sum_lst, label = 'LST' )
+
+plt.plot( x_round, u_sum_default, label='default scheduler' )
+plt.plot( x_round, u_sum_edf, label = 'EDF' )
+plt.plot( x_round, u_sum_wspt, label = 'WSPT' )
+# plt.scatter( x_round, t_sum_edf_m, label = 'WEDF' )
+plt.plot( x_round, u_sum_wsrt, label = 'WSRT' )
+plt.plot( x_round, u_sum_rms, label = 'RMS' )
+plt.plot( x_round, u_sum_lst, label = 'LST' )
+
+plt.xlabel( 'utilization factor' )
+plt.ylabel( 'normalized number of late jobs' )
+
+# ax1.scatter( x_round[0:1], t_sum_default_1, label='default scheduler' )
+# ax1.scatter( x_round[0:1], t_sum_edf_1, label = 'EDF' )
+# ax1.scatter( x_round[0:1], t_sum_wspt_1, label = 'WSPT' )
+# ax1.scatter( x_round[0:1], t_sum_edf_m_1, label = 'WEDF' )
+# ax1.scatter( x_round[0:1], t_sum_wsrt_1, label = 'WSRT' )
+# ax1.plot( x_round[0:1], t_sum_default_1, label='default scheduler'  )
+# ax1.plot( x_round[0:1], t_sum_edf_1, label='EDF' )
+# ax1.plot( x_round[0:1], t_sum_wspt_1, label='WSPT' )
+# ax1.plot( x_round[0:1], t_sum_edf_m_1, label='WEDF' )
+# ax1.plot( x_round[0:1], t_sum_wsrt_1, label='WSRT' )
+# ax1.set_xlabel( 'utilization factor' )
+# ax1.set_ylabel( 'normalized weighted tardiness' )
+# ax2 = plt.add_subplot(122)
+# ax2.scatter( x_round[2:6], u_sum_default_2, label='default scheduler' )
+# ax2.scatter( x_round[2:6], u_sum_edf_2, label='EDF' )
+# ax2.scatter( x_round[2:6], u_sum_wspt_2, label='WSPT' )
+# ax2.scatter( x_round[2:6], u_sum_edf_m_2, label='WEDF' )
+# ax2.scatter( x_round[2:6], u_sum_wsrt_2, label = 'WSRT' )
+# ax2.plot( x_round[2:6], u_sum_default_2, label='default scheduler' )
+# ax2.plot( x_round[2:6], u_sum_edf_2, label='EDF' )
+# ax2.plot( x_round[2:6], u_sum_wspt_2, label='WSPT' )
+# ax2.plot( x_round[2:6], u_sum_edf_m_2, label='WEDF' )
+# ax2.plot( x_round[2:6], u_sum_wsrt_2, label='WSRT' )
+# ax2.set_xlabel( 'utilization factor' )
+# ax2.set_ylabel( 'normalized number of late jobs' )
 plt.legend()
 plt.show()

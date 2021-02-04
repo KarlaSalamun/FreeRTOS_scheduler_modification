@@ -38,7 +38,7 @@ int cmp_period( const void *a, const void * b ) {
 }
 
 int cmp_wpt( const void *a, const void * b ) {
-    return ( (( _task * )(b))->duration * (( _task * )(b))->weight - (( _task * )(a))->duration * (( _task * )(a))->weight );
+    return ( (( _task * )(b))->duration / (( _task * )(b))->weight - (( _task * )(a))->duration / (( _task * )(a))->weight );
 }
 
 int main( int argc, char *argv[] ) {

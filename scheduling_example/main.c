@@ -33,6 +33,13 @@ typedef struct _task {
     double weight;
 } _task;
 
+int cmp_period( const void *a, const void * b ) {
+    return ( (( _task * )(b))->period - (( _task * )(a))->period );
+}
+
+int cmp_wpt( const void *a, const void * b ) {
+    return ( (( _task * )(b))->duration * (( _task * )(b))->weight - (( _task * )(a))->duration * (( _task * )(a))->weight );
+}
 
 int main( int argc, char *argv[] ) {
 
@@ -44,16 +51,20 @@ int main( int argc, char *argv[] ) {
 
     _task tasks[TSK_NUM];
     FILE *fd = fopen( filename, "r+" );
-    output = fopen( "outputs/default", "a+" );
+    output = fopen( "outputs/wspt", "a+" );
 
     for( int i=0; i<TSK_NUM; i++ ) {
         fscanf( fd, "%d %d %lf", &tasks[i].period, &tasks[i].duration, &tasks[i].weight );
 
+        
+
+        // assert( tasks[i].weight == 1 );
+    }
+    qsort( tasks, TSK_NUM, sizeof( _task ), cmp_wpt );
+    for( int i=0; i<TSK_NUM; i++ ) {
         char name[TSK_NUM];
         sprintf( name, "%d", i );
-
-        xTaskCreate( TSK_A, name, configMINIMAL_STACK_SIZE, ( void * const )&tasks[i], 10 - ((int)tasks[i].weight * 10), NULL );
-        // assert( tasks[i].weight == 1 );
+        xTaskCreate( TSK_A, name, configMINIMAL_STACK_SIZE, ( void * const )&tasks[i], i, NULL );
     }
     mean_proctime /= TSK_NUM;
 
@@ -111,9 +122,9 @@ void vApplicationTickHook( void ) {
         mean_proctime /= job_num;
         mean_weight /= job_num;
         fprintf( output, "%lf %lf %d %d %lf %lf %lf\n", overload, total_tardiness, hperiod, job_num, mean_proctime, mean_weight, unit_tardiness );
-        if( overload > 1 ) {
-            assert( total_tardiness != 0 );
-        }
+        // if( overload > 1 ) {
+        //     assert( total_tardiness != 0 );
+        // }
         fclose( output );
         exit(0);
     }

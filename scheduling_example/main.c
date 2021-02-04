@@ -46,7 +46,7 @@ int main( int argc, char *argv[] ) {
 
     _task tasks[TSK_NUM];
     FILE *fd = fopen( filename, "r+" );
-    output = fopen( "outputs/edf", "a+" );
+    output = fopen( "outputs/lst", "a+" );
 
     for( int i=0; i<TSK_NUM; i++ ) {
         fscanf( fd, "%d %d %lf", &tasks[i].period, &tasks[i].duration, &tasks[i].weight );
@@ -105,9 +105,9 @@ void TSK_A( void *pvParameters ) {
                 }
             }
         }
-        if( xLastWakeTimeA + params->period <= xTime ) {
+        if( xLastWakeTimeA + params->period < xTime ) {
             total_tardiness += params->weight * ( xTime - ( xLastWakeTimeA + params->period ) );
-            assert(overload > 1);
+            // assert(overload > 1);
             unit_tardiness += params->weight;
         }
         mean_weight += params->weight;
@@ -128,9 +128,9 @@ void vApplicationTickHook( void ) {
         mean_proctime /= job_num;
         mean_weight /= job_num;
         fprintf( output, "%lf %lf %d %d %lf %lf %lf\n", overload, total_tardiness, hperiod, job_num, mean_proctime, mean_weight, unit_tardiness );
-        if( overload > 1 ) {
-            assert( total_tardiness != 0 );
-        }
+        // if( overload > 1 ) {
+        //     assert( total_tardiness != 0 );
+        // }
         fclose( output );
         exit(0);
     }

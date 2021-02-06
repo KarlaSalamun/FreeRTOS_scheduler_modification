@@ -22,10 +22,11 @@ double mean_proctime;
 double overload;
 double mean_weight;
 FILE *output;
+int active;
 
 #define TSK_A_PERIOD 5
 #define TSK_B_PERIOD 8
-#define TSK_NUM      5
+#define TSK_NUM      3
 
 typedef struct _task {
     int period;
@@ -33,8 +34,10 @@ typedef struct _task {
     double weight;
     int id;
     int remaining;
+    int instance;
 } _task;
 
+struct _task tasks[TSK_NUM];
 
 int main( int argc, char *argv[] ) {
 
@@ -44,14 +47,14 @@ int main( int argc, char *argv[] ) {
 
     vPortEarlyInit();
 
-    _task tasks[TSK_NUM];
     FILE *fd = fopen( filename, "r+" );
-    output = fopen( "outputs/lst", "a+" );
+    output = fopen( "outputs/test", "a+" );
 
     for( int i=0; i<TSK_NUM; i++ ) {
         fscanf( fd, "%d %d %lf", &tasks[i].period, &tasks[i].duration, &tasks[i].weight );
 
         tasks[i].id = i;
+        tasks[i].instance = 1;
         tasks[i].remaining = tasks[i].duration;
 
         char name[TSK_NUM];
@@ -72,49 +75,49 @@ int main( int argc, char *argv[] ) {
 }
 
 void TSK_A( void *pvParameters ) {
-    _task *params = ( _task * )pvParameters;
+    int index = (( _task * )pvParameters)->id;
     TickType_t xLastWakeTimeA;
     TickType_t xNextWakeTimeA;
     // const TickType_t xFrequency = TSK_A_PERIOD;
-    const TickType_t xFrequency = params->period;
+    const TickType_t xFrequency = tasks[index].period;
     TickType_t xNextTime;
     TickType_t xTime;
     xLastWakeTimeA = 0;
-    xNextWakeTimeA = params->period;
+    xNextWakeTimeA = tasks[index].period;
+    int count = tasks[index].duration;
     for(;;) {
         xTime= xTaskGetTickCount();
-        // taskENTER_CRITICAL();
-        // printf( "[task %d] START\n", params->id );
-        // taskEXIT_CRITICAL();
+        taskENTER_CRITICAL();
+        printf( "[task %d] START\n", index );
+        active = index;
+        taskEXIT_CRITICAL();
         //While loop that simulates capacity
         // printf( "task A start\n" );
         while(1) {
             if((xNextTime = xTaskGetTickCount()) > xTime) {
-                // taskENTER_CRITICAL();
-                // printf( "[task %d] remaining %d\n", params->id, params->remaining );
-                // taskEXIT_CRITICAL();
+                taskENTER_CRITICAL();
+                active = index;
                 xTime = xNextTime;
                 // vTaskSuspendAll();
-                params->remaining--;
-                if( params->remaining == 0 ) {
-                    taskENTER_CRITICAL();
+                count--;
+                if( count == 0 ) {
                     break;
                 }
                 else {
                     // xTaskResumeAll();
+                    taskEXIT_CRITICAL();
                 }
             }
         }
-        if( xLastWakeTimeA + params->period < xTime ) {
-            total_tardiness += params->weight * ( xTime - ( xLastWakeTimeA + params->period ) );
-            // assert(overload > 1);
-            unit_tardiness += params->weight;
-        }
-        mean_weight += params->weight;
-        mean_proctime += params->duration;
-        job_num++;
-        params->remaining = params->duration;
-        xNextWakeTimeA = xLastWakeTimeA + params->period; 
+        // if( xLastWakeTimeA + tasks[index].period < xTime ) {
+        //     total_tardiness += tasks[index].weight * ( xTime - ( xLastWakeTimeA + tasks[index].period ) );
+        //     // assert(overload > 1);
+        //     unit_tardiness += tasks[index].weight;
+        //     printf( "[task %d] tardiness %d\n", index, ( xTime - ( xLastWakeTimeA + params->period ) ));
+        // }
+        active = index;
+        count = tasks[index].duration;
+        xNextWakeTimeA = xLastWakeTimeA + tasks[index].period; 
         vTaskDelayUntil(&xLastWakeTimeA, xFrequency);
         taskEXIT_CRITICAL();
         // xTaskResumeAll();
@@ -124,6 +127,27 @@ void TSK_A( void *pvParameters ) {
 void vApplicationTickHook( void ) {
     int xTime = ( int )xTaskGetTickCount();
     // printf( "TICK: %d\n", xTime );
+    for( int i=0; i<TSK_NUM; i++ ) {
+        if( i == active ) {
+            tasks[i].remaining--;
+            taskENTER_CRITICAL();
+            printf( "[task %d] remaining %d\n", i, tasks[i].remaining );
+            taskEXIT_CRITICAL();
+        }
+        if( tasks[i].remaining == 0 ) {
+            if( tasks[i].instance * tasks[i].period < xTime ) {
+                total_tardiness += tasks[i].weight * ( xTime - tasks[i].instance * tasks[i].period );
+                taskENTER_CRITICAL();
+                printf( "task %d: tardiness %d\n", i, ( xTime - tasks[i].instance * tasks[i].period ) );
+                taskEXIT_CRITICAL();
+            }
+            mean_weight += tasks[i].weight;
+            mean_proctime += tasks[i].duration;
+            job_num++;
+            tasks[i].remaining = tasks[i].duration;
+            tasks[i].instance++;
+        }
+    }
     if( xTime >= 2 * hperiod ) {
         mean_proctime /= job_num;
         mean_weight /= job_num;

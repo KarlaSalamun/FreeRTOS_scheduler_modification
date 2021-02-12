@@ -39,6 +39,14 @@ typedef struct _task {
 
 struct _task tasks[TSK_NUM];
 
+int cmp_period( const void *a, const void * b ) {
+    return ( (( _task * )(b))->period - (( _task * )(a))->period );
+}
+
+int cmp_wpt( const void *a, const void * b ) {
+    return ( (( _task * )(b))->duration / (( _task * )(b))->weight - (( _task * )(a))->duration / (( _task * )(a))->weight );
+}
+
 int main( int argc, char *argv[] ) {
 
     char filename[12];
@@ -57,11 +65,17 @@ int main( int argc, char *argv[] ) {
         tasks[i].instance = 1;
         tasks[i].remaining = tasks[i].duration;
 
+        // char name[TSK_NUM];
+        // sprintf( name, "%d", i );
+
+        // xTaskPeriodicCreate( TSK_A, name, configMINIMAL_STACK_SIZE, ( void * const )&tasks[i], 1, 
+        //     NULL, tasks[i].period, tasks[i].duration, tasks[i].weight, 0 );
+    }
+    qsort( tasks, TSK_NUM, sizeof( _task ), cmp_period );
+    for( int i=0; i<TSK_NUM; i++ ) {
         char name[TSK_NUM];
         sprintf( name, "%d", i );
-
-        xTaskPeriodicCreate( TSK_A, name, configMINIMAL_STACK_SIZE, ( void * const )&tasks[i], 1, 
-            NULL, tasks[i].period, tasks[i].duration, tasks[i].weight, 0 );
+        xTaskCreate( TSK_A, name, configMINIMAL_STACK_SIZE, ( void * const )&tasks[i], i, NULL );
     }
     mean_proctime /= TSK_NUM;
 
@@ -126,7 +140,7 @@ void TSK_A( void *pvParameters ) {
 
 void vApplicationTickHook( void ) {
     int xTime = ( int )xTaskGetTickCount();
-    // printf( "TICK: %d\n", xTime );
+    printf( "TICK: %d\n", xTime );
     for( int i=0; i<TSK_NUM; i++ ) {
         if( i == active ) {
             tasks[i].remaining--;
@@ -149,6 +163,11 @@ void vApplicationTickHook( void ) {
         }
     }
     if( xTime >= 2 * hperiod ) {
+        for( int i=0; i<TSK_NUM; i++ ) {
+            if( tasks[i].instance < 2 * hperiod / tasks[i].period ) {
+                total_tardiness += ( 2 * hperiod / tasks[i].period - tasks[i].instance ) * tasks[i].period;
+            }
+        }
         mean_proctime /= job_num;
         mean_weight /= job_num;
         fprintf( output, "%lf %lf %d %d %lf %lf %lf\n", overload, total_tardiness, hperiod, job_num, mean_proctime, mean_weight, unit_tardiness );

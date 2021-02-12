@@ -65,17 +65,11 @@ int main( int argc, char *argv[] ) {
         tasks[i].instance = 1;
         tasks[i].remaining = tasks[i].duration;
 
-        // char name[TSK_NUM];
-        // sprintf( name, "%d", i );
-
-        // xTaskPeriodicCreate( TSK_A, name, configMINIMAL_STACK_SIZE, ( void * const )&tasks[i], 1, 
-        //     NULL, tasks[i].period, tasks[i].duration, tasks[i].weight, 0 );
-    }
-    qsort( tasks, TSK_NUM, sizeof( _task ), cmp_period );
-    for( int i=0; i<TSK_NUM; i++ ) {
         char name[TSK_NUM];
         sprintf( name, "%d", i );
-        xTaskCreate( TSK_A, name, configMINIMAL_STACK_SIZE, ( void * const )&tasks[i], i, NULL );
+
+        xTaskPeriodicCreate( TSK_A, name, configMINIMAL_STACK_SIZE, ( void * const )&tasks[i], 1, 
+            NULL, tasks[i].period, tasks[i].duration, tasks[i].weight, 0 );
     }
     mean_proctime /= TSK_NUM;
 
@@ -166,6 +160,7 @@ void vApplicationTickHook( void ) {
         for( int i=0; i<TSK_NUM; i++ ) {
             if( tasks[i].instance < 2 * hperiod / tasks[i].period ) {
                 total_tardiness += ( 2 * hperiod / tasks[i].period - tasks[i].instance ) * tasks[i].period;
+                printf( "total tardiness: %lf\n", total_tardiness );
             }
         }
         mean_proctime /= job_num;

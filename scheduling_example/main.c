@@ -136,13 +136,19 @@ void vApplicationTickHook( void ) {
     tasks[index].remaining--;
     if( tasks[index].remaining == 0 ) {
         tasks[index].remaining = tasks[index].duration;
+        if( xTime > tasks[index].instance * tasks[index].period ) {
+            total_tardiness += (xTime - tasks[index].instance * tasks[index].period) * tasks[index].weight;
+            printf( "tardiness: %lf\n", total_tardiness );
+        }
+        tasks[index].instance++;
     }
     taskEXIT_CRITICAL();
 
     if( xTime >= 2 * hperiod ) {
         for( int i=0; i<TSK_NUM; i++ ) {
             if( tasks[i].instance < ( 2 * hperiod / tasks[i].period ) ) {
-                total_tardiness += ( 2 * hperiod - tasks[i].instance * tasks[i].period );
+                total_tardiness += ( 2 * hperiod - tasks[i].instance * tasks[i].period ) * tasks[i].weight;
+                printf( "tardiness: %lf\n", total_tardiness );
             }
         }
         // mean_proctime /= job_num;

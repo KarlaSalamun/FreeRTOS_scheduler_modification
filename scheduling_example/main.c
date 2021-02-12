@@ -25,12 +25,13 @@ FILE *output;
 
 #define TSK_A_PERIOD 5
 #define TSK_B_PERIOD 8
-#define TSK_NUM      5
+#define TSK_NUM      3
 
 typedef struct _task {
     int period;
     int duration;
     double weight;
+    int id;
 } _task;
 
 int cmp_period( const void *a, const void * b ) {
@@ -57,13 +58,13 @@ int main( int argc, char *argv[] ) {
         fscanf( fd, "%d %d %lf", &tasks[i].period, &tasks[i].duration, &tasks[i].weight );
 
         
-
+        tasks[i].id = i;
         // assert( tasks[i].weight == 1 );
     }
-    qsort( tasks, TSK_NUM, sizeof( _task ), cmp_wpt );
+    qsort( tasks, TSK_NUM, sizeof( _task ), cmp_period );
     for( int i=0; i<TSK_NUM; i++ ) {
         char name[TSK_NUM];
-        sprintf( name, "%d", i );
+        sprintf( name, "%d", tasks[i].id );
         xTaskCreate( TSK_A, name, configMINIMAL_STACK_SIZE, ( void * const )&tasks[i], i, NULL );
     }
     mean_proctime /= TSK_NUM;

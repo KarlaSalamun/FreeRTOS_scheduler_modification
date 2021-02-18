@@ -77,26 +77,45 @@ def compute_mean_data( x, tuples ):
 
 ################# PROGRAM BEGINS HERE #####################################
 
-for file in listdir( 'inputs/' ):
-    print( file )
-    filename = "./build/exec " + file
-    call( filename, shell=True )
-
 default_tuples, x = parse_file( 'outputs/default' )
+rms_tuples, x = parse_file( 'outputs/rms' )
+edf_tuples, x = parse_file( 'outputs/edf' )
+wsrt_tuples, x = parse_file( 'outputs/wsrt' )
+lst_tuples, x = parse_file( 'outputs/lst' )
 
 x_round = compute_mean_x( x )
 
 t_sum_default, u_sum_default = compute_mean_data( x_round, default_tuples )
+t_sum_rms, u_sum_rms = compute_mean_data( x_round, rms_tuples )
+t_sum_edf, u_sum_edf = compute_mean_data( x_round, edf_tuples )
+t_sum_wsrt, u_sum_wsrt = compute_mean_data( x_round, wsrt_tuples )
+t_sum_lst, u_sum_lst = compute_mean_data( x_round, lst_tuples )
 
 fig = plt.figure()
 ax1 = fig.add_subplot(211)
 ax1.scatter( x_round, t_sum_default, label='default scheduler' )
+ax1.scatter( x_round, t_sum_rms, label='RMS' )
+ax1.scatter( x_round, t_sum_edf, label='EDF' )
+ax1.scatter( x_round, t_sum_wsrt, label='WSRT' )
+ax1.scatter( x_round, t_sum_lst, label='LST' )
 ax1.plot( x_round, t_sum_default )
+ax1.plot( x_round, t_sum_rms )
+ax1.plot( x_round, t_sum_edf )
+ax1.plot( x_round, t_sum_wsrt )
+ax1.plot( x_round, t_sum_lst )
 ax1.set_xlabel( 'utilization factor' )
 ax1.set_ylabel( 'normalized weighted tardiness' )
 ax2 = fig.add_subplot(212)
 ax2.scatter( x_round, u_sum_default, label='default scheduler' )
+ax2.scatter( x_round, u_sum_rms, label='RMS' )
+ax2.scatter( x_round, u_sum_edf, label='EDF' )
+ax2.scatter( x_round, u_sum_wsrt, label='WSRT' )
+ax2.scatter( x_round, u_sum_lst, label='LST' )
 ax2.plot( x_round, u_sum_default )
+ax2.plot( x_round, u_sum_rms )
+ax2.plot( x_round, u_sum_edf )
+ax2.plot( x_round, u_sum_wsrt )
+ax2.plot( x_round, u_sum_lst )
 ax2.set_xlabel( 'utilization factor' )
 ax2.set_ylabel( 'normalized number of late jobs' )
 plt.legend()

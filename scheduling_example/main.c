@@ -25,7 +25,7 @@ FILE *output;
 
 #define TSK_A_PERIOD 5
 #define TSK_B_PERIOD 8
-#define TSK_NUM      3
+#define TSK_NUM      5
 
 typedef struct _task {
     int period;
@@ -58,7 +58,7 @@ int main( int argc, char *argv[] ) {
     vPortEarlyInit();
 
     FILE *fd = fopen( filename, "r+" );
-    output = fopen( "outputs/wspt", "a+" );
+    output = fopen( "outputs/rms", "a+" );
 
     for( int i=0; i<TSK_NUM; i++ ) {
         fscanf( fd, "%d %d %lf", &tasks[i].period, &tasks[i].duration, &tasks[i].weight );
@@ -66,11 +66,11 @@ int main( int argc, char *argv[] ) {
         tasks[i].remaining = tasks[i].duration;
         tasks[i].id = i;
         sprintf( tasks[i].name, "%d", tasks[i].id );
+        // xTaskPeriodicCreate( TSK_A, tasks[i].name, configMINIMAL_STACK_SIZE, ( void * const )&tasks[i], 0, NULL, tasks[i].period, tasks[i].duration, tasks[i].weight, 0 );
         // assert( tasks[i].weight == 1 );
     }
     qsort( tasks, TSK_NUM, sizeof( _task ), cmp_period );
     for( int i=0; i<TSK_NUM; i++ ) {
-        printf("%d\n", tasks[i].id);
         xTaskCreate( TSK_A, tasks[i].name, configMINIMAL_STACK_SIZE, ( void * const )&tasks[i], i, NULL );
     }
     mean_proctime /= TSK_NUM;
@@ -106,15 +106,6 @@ void TSK_A( void *pvParameters ) {
                 xTime = xNextTime;
             }
         }
-        // if( xLastWakeTimeA + params->period <= xTime ) {
-        //     total_tardiness += params->weight * ( xTime - ( xLastWakeTimeA + params->period ) );
-        //     unit_tardiness += params->weight;
-        // }
-        // mean_weight += params->weight;
-        // mean_proctime += params->duration;
-        // job_num++;
-        // params->instance++;
-        // params->remaining = params->duration;
         vTaskDelayUntil( &xLastWakeTimeA, xFrequency );
     }
 }
@@ -132,13 +123,13 @@ void vApplicationTickHook( void ) {
         }
     }
     taskENTER_CRITICAL();
-    printf( "[TICK: %d]\t [task: %d/%s] remaining %d\n", xTime, tasks[index].id, tasks[index].name, tasks[index].remaining );
+    // printf( "[TICK: %d]\t [task: %d/%s] remaining %d\n", xTime, tasks[index].id, tasks[index].name, tasks[index].remaining );
     tasks[index].remaining--;
     if( tasks[index].remaining == 0 ) {
         tasks[index].remaining = tasks[index].duration;
         if( xTime > tasks[index].instance * tasks[index].period ) {
             total_tardiness += (xTime - tasks[index].instance * tasks[index].period) * tasks[index].weight;
-            printf( "tardiness: %lf\n", total_tardiness );
+            // printf( "tardiness: %lf\n", total_tardiness );
         }
         tasks[index].instance++;
     }
@@ -148,15 +139,9 @@ void vApplicationTickHook( void ) {
         for( int i=0; i<TSK_NUM; i++ ) {
             if( tasks[i].instance < ( 2 * hperiod / tasks[i].period ) ) {
                 total_tardiness += ( 2 * hperiod - tasks[i].instance * tasks[i].period ) * tasks[i].weight;
-                printf( "tardiness: %lf\n", total_tardiness );
+                // printf( "tardiness: %lf\n", total_tardiness );
             }
         }
-        // mean_proctime /= job_num;
-        // mean_weight /= job_num;
-        // fprintf( output, "%lf %lf %d %d %lf %lf %lf\n", overload, total_tardiness, hperiod, job_num, mean_proctime, mean_weight, unit_tardiness );
-        // if( overload > 1 ) {
-        //     assert( total_tardiness != 0 );
-        // }
         fclose( output );
         exit(0);
     }
